@@ -76,12 +76,26 @@ class ApiService private constructor(context: Context) {
     }
 
     // Register Device
-    suspend fun registerDevice(token: String, deviceId: String, deviceName: String) = withContext(Dispatchers.IO) {
+    suspend fun registerDevice(
+        token: String,
+        deviceId: String,
+        deviceName: String,
+        osVersion: String = "",
+        appVersion: String = "",
+        deviceModel: String = "",
+        locale: String = "",
+        timezone: String = ""
+    ) = withContext(Dispatchers.IO) {
         val json = gson.toJson(mapOf(
             "token" to token,
             "platform" to "android",
             "device_id" to deviceId,
-            "device_name" to deviceName
+            "device_name" to deviceName,
+            "os_version" to osVersion,
+            "app_version" to appVersion,
+            "device_model" to deviceModel,
+            "locale" to locale,
+            "timezone" to timezone
         ))
         val requestBody = json.toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
