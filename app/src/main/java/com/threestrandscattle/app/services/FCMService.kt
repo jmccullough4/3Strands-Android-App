@@ -16,21 +16,9 @@ class FCMService : FirebaseMessagingService() {
         super.onNewToken(token)
         Log.d(TAG, "New FCM token: $token")
 
+        // Register device with new token
         serviceScope.launch {
-            try {
-                val prefs = applicationContext.getSharedPreferences("device_prefs", MODE_PRIVATE)
-                var deviceId = prefs.getString("device_id", null)
-                if (deviceId == null) {
-                    deviceId = java.util.UUID.randomUUID().toString()
-                    prefs.edit().putString("device_id", deviceId).apply()
-                }
-                val deviceName = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
-                ApiService.getInstance(applicationContext)
-                    .registerDevice(token, deviceId, deviceName)
-                Log.d(TAG, "Device registered with backend")
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to register device: ${e.message}")
-            }
+            DeviceRegistration.register(applicationContext, token)
         }
     }
 
