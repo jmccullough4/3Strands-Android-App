@@ -53,10 +53,7 @@ import java.util.*
 fun EventsScreen(store: SaleStore) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val storeEvents by store.events.collectAsState()
-    val events = remember(storeEvents) {
-        storeEvents.ifEmpty { CattleEvent.fallback }
-    }
+    val events by store.events.collectAsState()
 
     var selectedDate by remember { mutableStateOf(Date()) }
     var displayedMonth by remember { mutableStateOf(Date()) }

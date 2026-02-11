@@ -1,7 +1,6 @@
 package com.threestrandscattle.app.models
 
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -98,37 +97,6 @@ data class CattleEvent(
     val longitude: Double,
     val icon: String
 ) {
-    companion object {
-        val fallback: List<CattleEvent> = listOf(
-            CattleEvent(
-                id = -1,
-                title = "Lauderdale by the Sea Market",
-                date = makeDate(2026, 2, 15, 9, 0),
-                endDate = makeDate(2026, 2, 15, 13, 0),
-                location = "4500 El Mar Dr., Lauderdale-by-the-Sea",
-                latitude = 26.1934,
-                longitude = -80.0962,
-                icon = "leaf.fill"
-            ),
-            CattleEvent(
-                id = -2,
-                title = "Olive Branch Market",
-                date = makeDate(2026, 2, 20, 16, 0),
-                endDate = makeDate(2026, 2, 20, 19, 0),
-                location = "3750 NE Indian River Dr.",
-                latitude = 27.2506,
-                longitude = -80.2289,
-                icon = "leaf.fill"
-            )
-        )
-
-        private fun makeDate(year: Int, month: Int, day: Int, hour: Int, minute: Int): Date {
-            val cal = Calendar.getInstance()
-            cal.set(year, month - 1, day, hour, minute, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-            return cal.time
-        }
-    }
 }
 
 // Inbox Item
