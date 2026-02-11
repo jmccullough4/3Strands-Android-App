@@ -1,7 +1,11 @@
 package com.threestrandscattle.app.ui.screens
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,26 +26,33 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.threestrandscattle.app.models.CattleEvent
+import com.threestrandscattle.app.services.LocationService
 import com.threestrandscattle.app.services.SaleStore
 import com.threestrandscattle.app.ui.theme.ThemeColors
 import com.threestrandscattle.app.ui.theme.ThemeDimens
 import com.threestrandscattle.app.ui.theme.ThemeTypography
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreen(store: SaleStore) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val storeEvents by store.events.collectAsState()
     val events = remember(storeEvents) {
         storeEvents.ifEmpty { CattleEvent.fallback }
@@ -50,6 +61,67 @@ fun EventsScreen(store: SaleStore) {
     var selectedDate by remember { mutableStateOf(Date()) }
     var displayedMonth by remember { mutableStateOf(Date()) }
     val calendar = remember { Calendar.getInstance() }
+
+    // Location permission state
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        hasLocationPermission = granted
+        LocationService.getInstance(context).setAuthorized(granted)
+    }
+
+    // Request location permission when screen appears if not already granted
+    LaunchedEffect(Unit) {
+        if (!hasLocationPermission) {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    // Camera position for the map
+    val cameraPositionState = rememberCameraPositionState {
+        val defaultPos = if (events.isNotEmpty()) {
+            LatLng(events.first().latitude, events.first().longitude)
+        } else {
+            LatLng(27.0, -80.2) // Central Florida
+        }
+        position = CameraPosition.fromLatLngZoom(defaultPos, 8f)
+    }
+
+    // Build bounds from all events for recentering
+    val eventBounds = remember(events) {
+        if (events.isNotEmpty()) {
+            val boundsBuilder = LatLngBounds.builder()
+            events.forEach { event ->
+                boundsBuilder.include(LatLng(event.latitude, event.longitude))
+            }
+            boundsBuilder.build()
+        } else null
+    }
+
+    // Fit map to show all event markers on first load
+    LaunchedEffect(events) {
+        if (events.isNotEmpty()) {
+            val boundsBuilder = LatLngBounds.builder()
+            events.forEach { event ->
+                boundsBuilder.include(LatLng(event.latitude, event.longitude))
+            }
+            val bounds = boundsBuilder.build()
+            cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(bounds, 80))
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -86,30 +158,7 @@ fun EventsScreen(store: SaleStore) {
                 )
             }
 
-            // Google Maps showing event locations
-            val cameraPositionState = rememberCameraPositionState {
-                // Center on Florida (default) or first event
-                val defaultPos = if (events.isNotEmpty()) {
-                    LatLng(events.first().latitude, events.first().longitude)
-                } else {
-                    LatLng(27.0, -80.2) // Central Florida
-                }
-                position = CameraPosition.fromLatLngZoom(defaultPos, 8f)
-            }
-
-            // Fit map to show all event markers
-            LaunchedEffect(events) {
-                if (events.size > 1) {
-                    val boundsBuilder = LatLngBounds.builder()
-                    events.forEach { event ->
-                        boundsBuilder.include(LatLng(event.latitude, event.longitude))
-                    }
-                    val bounds = boundsBuilder.build()
-                    val center = bounds.center
-                    cameraPositionState.position = CameraPosition.fromLatLngZoom(center, 7f)
-                }
-            }
-
+            // Google Maps with event markers
             Box(
                 modifier = Modifier
                     .padding(horizontal = ThemeDimens.ScreenPadding)
@@ -120,7 +169,14 @@ fun EventsScreen(store: SaleStore) {
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = cameraPositionState,
-                    properties = MapProperties(mapType = MapType.NORMAL)
+                    properties = MapProperties(
+                        mapType = MapType.NORMAL,
+                        isMyLocationEnabled = hasLocationPermission
+                    ),
+                    uiSettings = MapUiSettings(
+                        zoomControlsEnabled = false,
+                        myLocationButtonEnabled = false
+                    )
                 ) {
                     events.forEach { event ->
                         Marker(
@@ -129,6 +185,32 @@ fun EventsScreen(store: SaleStore) {
                             snippet = event.location
                         )
                     }
+                }
+
+                // Recenter button overlay (bottom-right of map)
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            eventBounds?.let { bounds ->
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngBounds(bounds, 80)
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(ThemeColors.CardBackground.copy(alpha = 0.9f))
+                ) {
+                    Icon(
+                        Icons.Filled.MyLocation,
+                        contentDescription = "Recenter map",
+                        tint = ThemeColors.Primary,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
