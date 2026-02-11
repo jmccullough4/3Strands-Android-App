@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import java.util.Date
 
 class SaleStore(private val context: Context) : ViewModel() {
@@ -178,22 +179,18 @@ class SaleStore(private val context: Context) : ViewModel() {
             if (_sales.value.isEmpty()) _isLoading.value = true
 
             try {
-                val salesDeferred = async { apiService.fetchFlashSales() }
-                val popUpsDeferred = async { apiService.fetchPopUpSales() }
-                val announcementsDeferred = async { apiService.fetchAnnouncements() }
-                val eventsDeferred = async { apiService.fetchEvents() }
+                // supervisorScope prevents child async failures from cancelling the parent
+                supervisorScope {
+                    val salesDeferred = async { apiService.fetchFlashSales() }
+                    val popUpsDeferred = async { apiService.fetchPopUpSales() }
+                    val announcementsDeferred = async { apiService.fetchAnnouncements() }
+                    val eventsDeferred = async { apiService.fetchEvents() }
 
-                try {
-                    _sales.value = salesDeferred.await()
-                    _popUpSales.value = popUpsDeferred.await()
-                    _announcements.value = announcementsDeferred.await()
-                    _events.value = eventsDeferred.await()
-                } catch (_: Exception) {
-                    // Fetch individually so one failure doesn't block others
-                    try { _sales.value = apiService.fetchFlashSales() } catch (_: Exception) { }
-                    try { _popUpSales.value = apiService.fetchPopUpSales() } catch (_: Exception) { }
-                    try { _announcements.value = apiService.fetchAnnouncements() } catch (_: Exception) { }
-                    try { _events.value = apiService.fetchEvents() } catch (_: Exception) { }
+                    // Catch each individually so one failure doesn't block others
+                    try { _sales.value = salesDeferred.await() } catch (_: Exception) { }
+                    try { _popUpSales.value = popUpsDeferred.await() } catch (_: Exception) { }
+                    try { _announcements.value = announcementsDeferred.await() } catch (_: Exception) { }
+                    try { _events.value = eventsDeferred.await() } catch (_: Exception) { }
                 }
             } catch (_: Exception) { }
 
