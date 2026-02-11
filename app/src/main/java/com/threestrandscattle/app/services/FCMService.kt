@@ -18,11 +18,13 @@ class FCMService : FirebaseMessagingService() {
 
         serviceScope.launch {
             try {
-                val deviceId = android.provider.Settings.Secure.getString(
-                    applicationContext.contentResolver,
-                    android.provider.Settings.Secure.ANDROID_ID
-                )
-                val deviceName = android.os.Build.MODEL
+                val prefs = applicationContext.getSharedPreferences("device_prefs", MODE_PRIVATE)
+                var deviceId = prefs.getString("device_id", null)
+                if (deviceId == null) {
+                    deviceId = java.util.UUID.randomUUID().toString()
+                    prefs.edit().putString("device_id", deviceId).apply()
+                }
+                val deviceName = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
                 ApiService.getInstance(applicationContext)
                     .registerDevice(token, deviceId, deviceName)
                 Log.d(TAG, "Device registered with backend")
