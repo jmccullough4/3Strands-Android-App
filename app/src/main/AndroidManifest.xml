@@ -32,6 +32,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Geofence broadcast receiver -->
+        <receiver
+            android:name=".services.GeofenceBroadcastReceiver"
+            android:exported="false" />
+
         <!-- Google Maps API key (replace with your actual key) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
