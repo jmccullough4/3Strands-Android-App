@@ -5,9 +5,6 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +22,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.threestrandscattle.app.models.CattleEvent
 import com.threestrandscattle.app.services.SaleStore
 import com.threestrandscattle.app.ui.theme.ThemeColors
@@ -80,34 +86,49 @@ fun EventsScreen(store: SaleStore) {
                 )
             }
 
-            // Map placeholder (Google Maps requires API key)
+            // Google Maps showing event locations
+            val cameraPositionState = rememberCameraPositionState {
+                // Center on Florida (default) or first event
+                val defaultPos = if (events.isNotEmpty()) {
+                    LatLng(events.first().latitude, events.first().longitude)
+                } else {
+                    LatLng(27.0, -80.2) // Central Florida
+                }
+                position = CameraPosition.fromLatLngZoom(defaultPos, 8f)
+            }
+
+            // Fit map to show all event markers
+            LaunchedEffect(events) {
+                if (events.size > 1) {
+                    val boundsBuilder = LatLngBounds.builder()
+                    events.forEach { event ->
+                        boundsBuilder.include(LatLng(event.latitude, event.longitude))
+                    }
+                    val bounds = boundsBuilder.build()
+                    val center = bounds.center
+                    cameraPositionState.position = CameraPosition.fromLatLngZoom(center, 7f)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .padding(horizontal = ThemeDimens.ScreenPadding)
                     .fillMaxWidth()
                     .height(250.dp)
                     .clip(RoundedCornerShape(ThemeDimens.CornerRadius))
-                    .background(ThemeColors.CardBackground),
-                contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Filled.Map,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = ThemeColors.Primary.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Map View",
-                        color = ThemeColors.TextSecondary,
-                        fontSize = 14.sp
-                    )
-                    Text(
-                        "${events.size} event location${if (events.size != 1) "s" else ""}",
-                        color = ThemeColors.TextSecondary.copy(alpha = 0.7f),
-                        fontSize = 12.sp
-                    )
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    properties = MapProperties(mapType = MapType.NORMAL)
+                ) {
+                    events.forEach { event ->
+                        Marker(
+                            state = MarkerState(position = LatLng(event.latitude, event.longitude)),
+                            title = event.title,
+                            snippet = event.location
+                        )
+                    }
                 }
             }
 
