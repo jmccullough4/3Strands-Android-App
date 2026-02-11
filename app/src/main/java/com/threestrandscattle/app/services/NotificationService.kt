@@ -105,6 +105,28 @@ class NotificationService private constructor(private val context: Context) {
         } catch (_: SecurityException) { }
     }
 
+    fun sendNotification(channelId: String, title: String, body: String) {
+        if (!hasNotificationPermission()) return
+
+        val priority = if (channelId == CHANNEL_ID_SALES) {
+            NotificationCompat.PRIORITY_HIGH
+        } else {
+            NotificationCompat.PRIORITY_DEFAULT
+        }
+
+        val notification = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setPriority(priority)
+            .setAutoCancel(true)
+            .build()
+
+        try {
+            notificationManager.notify(UUID.randomUUID().hashCode(), notification)
+        } catch (_: SecurityException) { }
+    }
+
     fun sendProximityNotification(eventTitle: String) {
         if (!hasNotificationPermission()) return
 

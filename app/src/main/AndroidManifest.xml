@@ -37,10 +37,19 @@
             android:name=".services.GeofenceBroadcastReceiver"
             android:exported="false" />
 
-        <!-- Google Maps API key (replace with your actual key) -->
+        <!-- FCM Service -->
+        <service
+            android:name=".services.FCMService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
+            android:value="AIzaSyBTfuHbCT0fCYXc6aew2NmrQsSvKSy8mdQ" />
 
     </application>
 
