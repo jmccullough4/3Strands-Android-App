@@ -425,7 +425,7 @@ private fun EventsForDate(selectedDate: Date, events: List<CattleEvent>) {
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Icon
+                        // Icon (truck for popup events, calendar for regular)
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
@@ -434,7 +434,7 @@ private fun EventsForDate(selectedDate: Date, events: List<CattleEvent>) {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Eco,
+                                imageVector = if (event.isPopup) Icons.Filled.LocalShipping else Icons.Filled.Event,
                                 contentDescription = null,
                                 modifier = Modifier.size(22.dp),
                                 tint = ThemeColors.Bronze

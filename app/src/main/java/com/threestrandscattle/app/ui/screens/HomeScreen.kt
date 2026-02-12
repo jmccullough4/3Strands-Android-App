@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,8 +50,10 @@ fun HomeScreen(
     val sales by store.sales.collectAsState()
     val popUpSales by store.popUpSales.collectAsState()
     val inboxItems by store.inboxItems.collectAsState()
+    val isLoading by store.isLoading.collectAsState()
     val activeSales = remember(sales) { store.activeSales }
     val homeNotifications = remember(inboxItems) { store.homeNotifications }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -73,10 +76,20 @@ fun HomeScreen(
         },
         containerColor = ThemeColors.Background
     ) { padding ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                store.refreshSales()
+                isRefreshing = false
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+        ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -156,6 +169,7 @@ fun HomeScreen(
             QuickLinksSection()
 
             Spacer(modifier = Modifier.height(30.dp))
+        }
         }
     }
 }
