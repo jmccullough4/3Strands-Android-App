@@ -252,7 +252,7 @@ fun SettingsScreen(store: SaleStore, onBack: () -> Unit) {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Version", fontSize = 15.sp, color = ThemeColors.TextPrimary)
                     }
-                    Text("1.0.0", style = ThemeTypography.CaptionFont, color = ThemeColors.TextSecondary)
+                    Text("2.1.1", style = ThemeTypography.CaptionFont, color = ThemeColors.TextSecondary)
                 }
                 HorizontalDivider(color = ThemeColors.CardBackground)
                 Row(
