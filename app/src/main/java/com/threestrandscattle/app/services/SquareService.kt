@@ -13,6 +13,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import com.threestrandscattle.app.BuildConfig
 import java.util.concurrent.TimeUnit
 
 class SquareService private constructor(context: Context) {
@@ -22,7 +23,7 @@ class SquareService private constructor(context: Context) {
     private val baseURL = "https://connect.squareup.com/v2"
     private val apiVersion = "2024-01-18"
 
-    private val defaultToken = "EAAAl23jxhQmIejnibi8LPDjN9LLCkW2JhrrfnknRYoq_CuY0Kb6jJ0NRu8ucheC"
+    private val defaultToken = BuildConfig.SQUARE_ACCESS_TOKEN
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)

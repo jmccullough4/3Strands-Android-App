@@ -27,17 +27,15 @@ import com.threestrandscattle.app.services.SaleStore
 import com.threestrandscattle.app.ui.theme.ThemeColors
 import com.threestrandscattle.app.ui.theme.ThemeDimens
 import com.threestrandscattle.app.ui.theme.ThemeTypography
-import kotlinx.coroutines.launch
+import com.threestrandscattle.app.BuildConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(store: SaleStore, onBack: () -> Unit) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val notificationService = remember { NotificationService.getInstance(context) }
     val isAuthorized by notificationService.isAuthorized.collectAsState()
     val prefs by store.notificationPrefs.collectAsState()
-    var showTestAlert by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -201,36 +199,6 @@ fun SettingsScreen(store: SaleStore, onBack: () -> Unit) {
                 }
             }
 
-            // Testing
-            SettingsSection(title = "Testing") {
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            notificationService.scheduleTestNotification("Test Flash Sale", "25%")
-                        }
-                        showTestAlert = true
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Filled.Send,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = ThemeColors.Primary
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            "Send Test Notification",
-                            fontSize = 15.sp,
-                            color = ThemeColors.TextPrimary
-                        )
-                    }
-                }
-            }
-
             // About
             SettingsSection(
                 title = "About",
@@ -252,7 +220,7 @@ fun SettingsScreen(store: SaleStore, onBack: () -> Unit) {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Version", fontSize = 15.sp, color = ThemeColors.TextPrimary)
                     }
-                    Text("2.1.1", style = ThemeTypography.CaptionFont, color = ThemeColors.TextSecondary)
+                    Text(BuildConfig.VERSION_NAME, style = ThemeTypography.CaptionFont, color = ThemeColors.TextSecondary)
                 }
                 HorizontalDivider(color = ThemeColors.CardBackground)
                 Row(
@@ -279,21 +247,6 @@ fun SettingsScreen(store: SaleStore, onBack: () -> Unit) {
         }
     }
 
-    if (showTestAlert) {
-        AlertDialog(
-            onDismissRequest = { showTestAlert = false },
-            title = { Text("Test Sent!") },
-            text = { Text("A test notification will appear in ~5 seconds.") },
-            confirmButton = {
-                TextButton(onClick = { showTestAlert = false }) {
-                    Text("OK", color = ThemeColors.Primary)
-                }
-            },
-            containerColor = ThemeColors.CardBackground,
-            titleContentColor = ThemeColors.TextPrimary,
-            textContentColor = ThemeColors.TextSecondary
-        )
-    }
 }
 
 @Composable
