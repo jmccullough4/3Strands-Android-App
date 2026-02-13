@@ -38,10 +38,10 @@ class ApiService private constructor(context: Context) {
         apiSales.map { it.toFlashSale() }
     }
 
-    // Pop-Up Sales
+    // Pop-Up Markets (matches iOS endpoint)
     suspend fun fetchPopUpSales(): List<PopUpSale> = withContext(Dispatchers.IO) {
         val request = Request.Builder()
-            .url("$dashboardURL/api/public/pop-up-sales")
+            .url("$dashboardURL/api/public/pop-up-markets")
             .build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw ApiException("Server error: ${response.code}")

@@ -1,5 +1,7 @@
 package com.threestrandscattle.app.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -217,7 +219,9 @@ fun SaleDetailScreen(sale: FlashSale, onBack: () -> Unit) {
                 if (!sale.isExpired) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
-                            onClick = { /* Deep link to website */ },
+                            onClick = {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://3strandsbeef.com")))
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(ThemeDimens.CornerRadius),
                             colors = ButtonDefaults.buttonColors(containerColor = ThemeColors.Bronze)

@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +37,7 @@ fun FlashSalesScreen(
 ) {
     val sales by store.sales.collectAsState()
     var filterCut by remember { mutableStateOf<CutType?>(null) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     val activeSales = remember(sales, filterCut) {
         val active = store.activeSales
@@ -53,10 +55,19 @@ fun FlashSalesScreen(
         },
         containerColor = ThemeColors.Background
     ) { padding ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                store.refreshSales()
+                isRefreshing = false
+            },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+        ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -120,6 +131,7 @@ fun FlashSalesScreen(
                     }
                 }
             }
+        }
         }
     }
 }

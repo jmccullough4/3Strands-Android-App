@@ -8,17 +8,17 @@ import java.util.UUID
 
 // API Flash Sale from dashboard (snake_case JSON)
 data class ApiFlashSale(
-    val id: Int,
-    val title: String,
-    val description: String,
-    val cut_type: String,
-    val original_price: Double,
-    val sale_price: Double,
-    val weight_lbs: Double,
-    val starts_at: String?,
-    val expires_at: String?,
-    val image_system_name: String,
-    val is_active: Boolean
+    val id: Int = 0,
+    val title: String = "",
+    val description: String = "",
+    val cut_type: String = "",
+    val original_price: Double = 0.0,
+    val sale_price: Double = 0.0,
+    val weight_lbs: Double = 0.0,
+    val starts_at: String? = null,
+    val expires_at: String? = null,
+    val image_system_name: String = "",
+    val is_active: Boolean = false
 ) {
     fun toFlashSale(): FlashSale {
         return FlashSale(
@@ -39,38 +39,39 @@ data class ApiFlashSale(
 
 // Pop-Up Sale from dashboard
 data class PopUpSale(
-    val id: Int,
-    val title: String,
-    val description: String?,
-    val address: String?,
-    val latitude: Double,
-    val longitude: Double,
-    val starts_at: String?,
-    val ends_at: String?,
-    val is_active: Boolean
+    val id: Int = 0,
+    val title: String = "",
+    val description: String? = null,
+    val address: String? = null,
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val starts_at: String? = null,
+    val ends_at: String? = null,
+    val is_active: Boolean = false
 )
 
 // Announcement from dashboard
 data class Announcement(
-    val id: Int,
-    val title: String,
-    val message: String,
-    val created_at: String?,
-    val is_active: Boolean
+    val id: Int = 0,
+    val title: String = "",
+    val message: String = "",
+    val created_at: String? = null,
+    val is_active: Boolean = false
 )
 
 // Event API model from dashboard
 data class ApiEvent(
-    val id: Int,
-    val title: String,
-    val description: String?,
-    val location: String?,
-    val latitude: Double?,
-    val longitude: Double?,
-    val start_date: String?,
-    val end_date: String?,
-    val icon: String?,
-    val is_active: Boolean
+    val id: Int = 0,
+    val title: String = "",
+    val description: String? = null,
+    val location: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val start_date: String? = null,
+    val end_date: String? = null,
+    val icon: String? = null,
+    val is_active: Boolean = false,
+    val is_popup: Boolean? = null
 ) {
     fun toCattleEvent(): CattleEvent {
         return CattleEvent(
@@ -81,7 +82,8 @@ data class ApiEvent(
             location = location ?: "",
             latitude = latitude ?: 0.0,
             longitude = longitude ?: 0.0,
-            icon = icon ?: "calendar.fill"
+            icon = icon ?: "calendar.fill",
+            isPopup = is_popup ?: false
         )
     }
 }
@@ -95,9 +97,9 @@ data class CattleEvent(
     val location: String,
     val latitude: Double,
     val longitude: Double,
-    val icon: String
-) {
-}
+    val icon: String,
+    val isPopup: Boolean = false
+)
 
 // Inbox Item
 data class InboxItem(

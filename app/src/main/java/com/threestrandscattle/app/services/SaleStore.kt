@@ -2,6 +2,7 @@ package com.threestrandscattle.app.services
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -17,6 +18,10 @@ import kotlinx.coroutines.supervisorScope
 import java.util.Date
 
 class SaleStore(private val context: Context) : ViewModel() {
+
+    companion object {
+        private const val TAG = "SaleStore"
+    }
 
     private val gson = Gson()
     private val prefs: SharedPreferences = context.getSharedPreferences("sale_store", Context.MODE_PRIVATE)
@@ -187,14 +192,16 @@ class SaleStore(private val context: Context) : ViewModel() {
                     val eventsDeferred = async { apiService.fetchEvents() }
 
                     // Catch each individually so one failure doesn't block others
-                    try { _sales.value = salesDeferred.await() } catch (_: Exception) { }
-                    try { _popUpSales.value = popUpsDeferred.await() } catch (_: Exception) { }
-                    try { _announcements.value = announcementsDeferred.await() } catch (_: Exception) { }
-                    try { _events.value = eventsDeferred.await() } catch (_: Exception) { }
+                    try { _sales.value = salesDeferred.await() } catch (e: Exception) { Log.e(TAG, "Failed to fetch flash sales", e) }
+                    try { _popUpSales.value = popUpsDeferred.await() } catch (e: Exception) { Log.e(TAG, "Failed to fetch pop-up markets", e) }
+                    try { _announcements.value = announcementsDeferred.await() } catch (e: Exception) { Log.e(TAG, "Failed to fetch announcements", e) }
+                    try { _events.value = eventsDeferred.await() } catch (e: Exception) { Log.e(TAG, "Failed to fetch events", e) }
                 }
-            } catch (_: Exception) { }
+            } catch (e: Exception) { Log.e(TAG, "Failed to refresh data", e) }
 
             _isLoading.value = false
+            // Reload inbox from SharedPreferences to pick up items added by FCMService
+            loadInbox()
             syncAnnouncementsToInbox()
         }
     }

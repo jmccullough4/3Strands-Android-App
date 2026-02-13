@@ -40,6 +40,7 @@ fun MenuScreen(store: SaleStore) {
     var sections by remember { mutableStateOf<List<MenuSection>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var retryTrigger by remember { mutableIntStateOf(0) }
 
     suspend fun loadCatalog() {
         isLoading = sections.isEmpty()
@@ -68,7 +69,7 @@ fun MenuScreen(store: SaleStore) {
         isLoading = false
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(retryTrigger) {
         loadCatalog()
         // Poll every 30 seconds
         while (true) {
@@ -120,7 +121,7 @@ fun MenuScreen(store: SaleStore) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
-                        onClick = { /* Retry handled by LaunchedEffect */ },
+                        onClick = { retryTrigger++ },
                         colors = ButtonDefaults.buttonColors(containerColor = ThemeColors.Primary)
                     ) {
                         Text("Try Again")
