@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "952008841691",
+    "project_id": "strands-cattle-co-e0c05",
+    "storage_bucket": "strands-cattle-co-e0c05.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952008841691:android:0e96e92c572890e639effe",
+        "android_client_info": {
+          "package_name": "com.threestrandscattle.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5AA4IH_uI50LfuztIEFum_M8I0HPr_Cs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
