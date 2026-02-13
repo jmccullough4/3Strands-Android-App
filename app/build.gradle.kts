@@ -29,8 +29,8 @@ android {
         applicationId = "com.threestrandscattle.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 222
-        versionName = "2.2.2"
+        versionCode = 223
+        versionName = "2.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
